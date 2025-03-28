@@ -1,6 +1,10 @@
 package com.dexter.aktmusic.feature.player
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dexter.aktmusic.data.model.home.DSong
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
@@ -40,14 +45,14 @@ fun PlayerScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Song Info
-        state.currentSong?.let { song ->
+        state.currentSong?.let { DSong ->
             Text(
-                text = song.title,
+                text = DSong.songName,
                 style = MaterialTheme.typography.headlineMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = song.artist,
+                text = DSong.songArtist,
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -71,7 +76,7 @@ fun PlayerScreen(
         ) {
             IconButton(onClick = { viewModel.processIntent(PlayerIntent.PreviousSong) }) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.SkipPrevious,
+                    imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
                     contentDescription = "Previous"
                 )
             }
@@ -87,7 +92,7 @@ fun PlayerScreen(
             ) {
                 Icon(
                     imageVector = if (state.isPlaying) {
-                        androidx.compose.material.icons.Icons.Default.Pause
+                        androidx.compose.material.icons.Icons.Default.Send
                     } else {
                         androidx.compose.material.icons.Icons.Default.PlayArrow
                     },
@@ -97,7 +102,7 @@ fun PlayerScreen(
 
             IconButton(onClick = { viewModel.processIntent(PlayerIntent.NextSong) }) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.SkipNext,
+                    imageVector = androidx.compose.material.icons.Icons.Default.ArrowForward,
                     contentDescription = "Next"
                 )
             }

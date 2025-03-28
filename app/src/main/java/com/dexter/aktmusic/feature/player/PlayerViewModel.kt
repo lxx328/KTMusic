@@ -1,8 +1,9 @@
 package com.dexter.aktmusic.feature.player
 
 import com.dexter.aktmusic.base.mvi.BaseViewModel
-import com.dexter.aktmusic.domain.usecase.player.GetPlaylistUseCase
 import com.dexter.aktmusic.domain.usecase.player.PlaySongUseCase
+import com.dexter.aktmusic.domain.usecase.player.GetPlaylistUseCase
+
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
@@ -14,6 +15,36 @@ class PlayerViewModel @Inject constructor(
     private val playSongUseCase: PlaySongUseCase,
     private val getPlaylistUseCase: GetPlaylistUseCase
 ) : BaseViewModel<PlayerState, PlayerIntent, PlayerEffect>(PlayerState()) {
+
+    init {
+        loadPlaylist()
+    }
+
+    private fun loadPlaylist() = intent {
+        reduce {
+            state.copy(isLoading = true)
+        }
+        
+        try {
+            launch {
+                val playlist = getPlaylistUseCase()
+                reduce {
+                    state.copy(
+                        playlist = playlist,
+                        isLoading = false
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            reduce {
+                state.copy(
+                    error = e.message,
+                    isLoading = false
+                )
+            }
+            postSideEffect(PlayerEffect.ShowError(e.message ?: "Unknown error"))
+        }
+    }
 
     override fun processIntent(intent: PlayerIntent) {
         when (intent) {
@@ -33,15 +64,17 @@ class PlayerViewModel @Inject constructor(
         }
         
         try {
-            playSongUseCase(intent.song)
-            reduce {
-                state.copy(
-                    currentSong = intent.song,
-                    isPlaying = true,
-                    isLoading = false
-                )
+           launch {
+                playSongUseCase(intent.song)
+                reduce {
+                    state.copy(
+                        currentSong = intent.song,
+                        isPlaying = true,
+                        isLoading = false
+                    )
+                }
+                postSideEffect(PlayerEffect.ShowMiniPlayer)
             }
-            postSideEffect(PlayerEffect.ShowMiniPlayer)
         } catch (e: Exception) {
             reduce {
                 state.copy(
